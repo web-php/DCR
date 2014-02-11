@@ -120,7 +120,6 @@ class DbIndexer {
      */
     public function update_doc_data(array $fields)
     {
-        
         $sql = "UPDATE doc_data SET                
                     p210 =  ?, 
                     p111 = ? , 

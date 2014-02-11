@@ -17,7 +17,7 @@ class RouterMode {
     public function __construct($argv)
     {
         $this->argv = $argv;
-        $this->varbose();
+        $this->verbose();
         $this->set_routing();
     }
     
@@ -29,15 +29,12 @@ class RouterMode {
         return $this->router ;
     }
     
-    /**
-     * 
-     */
-    private function varbose()
+    private function verbose()
     {
         if (isset($this->argv[1]) AND in_array($this->argv[1], array('--help', '-help', '-h', '-?', '/help', '/h', '/?')))
         {
             //Обычный запуск
-            print "\tUsage: php " . $this->argv[0] . " reestr_id  [des : normal start]\n";
+            print "\tUsage: php " . $this->argv[0] . " -reestr_id  [des : normal start]\n";
             // Перебираем документы из определенного реестра,или все документы если реестр не указан заного собираем поля 731 - 732
             print "\tUsage: php " . $this->argv[0] . " -patch-731-732 reestr_id [des : reload reestr_id documents]\n";
             // Перебираем документы из определенного реестра,или все документы заного собираем поля 111 - 210 
