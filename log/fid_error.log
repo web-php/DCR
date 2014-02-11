@@ -1,0 +1,144 @@
+18.10.13 17:14:29	SQLSTATE[28000] [1045] Access denied for user 'm4_om'@'localhost' (using password: YES)
+20.10.13 14:38:19	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SET p732 = 'Гэллап Инк., 1001 Гэллап Драйв, Омаха, Не' at line 3
+20.10.13 14:41:15	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SET p732 = 'Гэллап Инк., 1001 Гэллап Драйв, Омаха, Не' at line 3
+20.10.13 14:42:30	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SET p732 = 'Гэллап Инк., 1001 Гэллап Драйв, Омаха, Не' at line 3
+20.10.13 14:44:06	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SET `p732` = 'Гэллап Инк., 1001 Гэллап Драйв, Омаха, Н' at line 3
+20.10.13 14:45:23	SQLSTATE[42S02]: Base table or view not found: 1146 Table 'm4_fp.doc_date' doesn't exist
+20.10.13 14:48:21	SQLSTATE[42S02]: Base table or view not found: 1146 Table 'm4_fp.doc_date' doesn't exist
+20.10.13 14:54:48	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND doc_data.id = 3
+				ORDER BY id' at line 8
+21.10.13 15:19:29	SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p731_2_date' in 'field list'
+21.10.13 16:20:19	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+22.10.13 10:40:57	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 10:41:56	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 11:06:31	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 11:06:43	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 11:20:20	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 11:20:23	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 11:21:06	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 11:25:27	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`
+				FROM 
+        ' at line 2
+22.10.13 11:27:52	SQLSTATE[42S22]: Column not found: 1054 Unknown column 'link.id' in 'field list'
+22.10.13 11:28:58	SQLSTATE[42S22]: Column not found: 1054 Unknown column 'reestr.p540_file_path' in 'field list'
+22.10.13 11:30:48	SQLSTATE[42S22]: Column not found: 1054 Unknown column 'reestr.p540_file_path' in 'field list'
+23.10.13 16:32:10	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = '994722'' at line 4
+23.10.13 16:39:10	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = '994722'' at line 4
+23.10.13 17:50:53	SQLSTATE[21S01]: Insert value list does not match column list: 1136 Column count doesn't match value count at row 1
+23.10.13 17:51:19	SQLSTATE[21S01]: Insert value list does not match column list: 1136 Column count doesn't match value count at row 1
+23.10.13 17:53:20	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.10.13 12:42:08	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = '140231'' at line 4
+06.11.13 13:08:41	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 13:10:09	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 13:18:14	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 13:18:29	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 13:21:02	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 13:21:59	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 13:22:16	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 14:53:51	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 15:00:36	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 15:07:01	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+06.11.13 15:08:47	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+28.11.13 17:02:22	SQLSTATE[42S22]: Column not found: 1054 Unknown column 'dd.id_link' in 'on clause'
+29.11.13 10:47:29	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 10:49:04	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 10:49:32	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 10:50:35	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 10:50:41	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 10:54:50	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 11:02:01	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:08:03	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:08:18	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:08:56	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:23:04	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:23:50	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:24:54	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:25:23	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 11:25:38	SQLSTATE[HY093]: Invalid parameter number: mixed named and positional parameters
+29.11.13 11:31:18	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 11:31:38	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 11:32:08	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 11:32:24	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''20081208' , '20081208' , '20081208' , '20081208' , '20081208' , '20081208' , '2' at line 2
+29.11.13 13:40:13	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ORDER BY id' at line 15
+29.11.13 13:41:14	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+				ORDER BY id' at line 14
+29.11.13 13:41:17	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+				ORDER BY id' at line 14
+29.11.13 13:41:42	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+				ORDER BY id' at line 14
+29.11.13 14:07:40	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 14:44:13	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 14:45:49	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 14:46:15	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 14:48:15	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 14:48:18	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:00:56	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:00:58	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:01:03	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:01:14	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:01:15	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:01:16	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:03:36	SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+29.11.13 15:07:32	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:07:43	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:07:45	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:08:25	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:08:43	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:09:39	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:10:00	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:10:01	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:10:06	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:10:14	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:10:19	SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+29.11.13 15:53:05	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:53:39	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:55:10	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:55:12	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:57:29	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:57:38	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:57:56	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:58:04	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:59:29	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+29.11.13 15:59:31	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+                                        
+				ORDER BY id' at line 14
+10.01.14 12:17:17	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = ''' at line 3
+10.01.14 12:19:14	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = '1'' at line 3
+10.01.14 12:20:48	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = '1'' at line 3
+10.01.14 12:20:53	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = '1'' at line 3
+10.01.14 12:21:32	SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'WHERE doc_data.id = '1'' at line 3
+20.01.14 14:04:12	SQLSTATE[HY000]: General error: 2013 Lost connection to MySQL server during query
