@@ -6,35 +6,35 @@
 
 error_reporting(E_ALL | E_STRICT);
 
-require_once __DIR__ . "/classes/FidIndexer.php";
+require_once __DIR__ . "/classes/Db.php";
+require_once __DIR__ . "/classes/DocumentIndexer.php";
 require_once __DIR__ . "/classes/FidReport.php";
 require_once __DIR__ . "/classes/RouterMode.php";
-require_once __DIR__ . "/cfg/cfg.php";
+
+$config = require_once __DIR__ . "/cfg/config.php";
 
 
 try
 {
     $time_begin = time();
-    $pdo = new PDO(
-            'mysql:host=' . Cfg::FIP_MYSQL_HOST . ';dbname=' . Cfg::FIP_MYSQL_DB, Cfg::FIP_MYSQL_USER, Cfg::FIP_MYSQL_PASS, array(
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-            )
-    );
-
-    $RouterMode = new RouterMode($argv);
-    $router = $RouterMode->get_router();
-    $FidIndexer = new FidIndexer($pdo);
-    $FidIndexer->set_datadir(__DIR__ . Cfg::FID_DATADIR);
-    $FidIndexer->run($router['reestr_id'], $router['mode']);
+    $pdo['DATA']  = new Db($config['DB']['BASE_DATA']);
+    $pdo['HTML'] = new Db($config['DB']['BASE_HTML']);
+    //Определить режимы запуска
+    $RouterMode = new RouterMode($config , $argv);
+    //Запустить индексатор
+    $router = $RouterMode->get_router() ; 
+    
+    $DocumentIndexer = new DocumentIndexer( $router , $config , $pdo );
+    $DocumentIndexer->run();
     
     
-    $docs_added = $FidIndexer->get_docs_added();
-    $docs_patched = $FidIndexer->get_docs_patched();
-
-    $FidReport = new FidReport($pdo);
+    $docs_added = $DocumentIndexer->get_docs_added();
+    $docs_patched = $DocumentIndexer->get_docs_patched();
     
-    print "Функция:			Индексация документов\n";
+    $FidReport = new FidReport($pdo['DATA']);
+    
+    print "Функция:			Индексация документов - ".$router['mode']."\n";
+    print "Реестры:			".implode(" , ",$router['reestr_id'])."\n";
     print "Исполняемый файл:		" . __FILE__ . "\n\n";
 
     print $FidReport->get_time_report($time_begin);
@@ -52,7 +52,7 @@ catch (Exception $e)
 {
     $errmsg = date("d.m.y H:i:s") . "\t" . $e->getMessage() . "\n";
     print($e->getMessage());
-    $ferr = fopen(Cfg::FID_ERROR_LOG, 'a');
+    $ferr = fopen($config['ERROR_LOG'], 'a');
     fwrite($ferr, $errmsg);
     fclose($ferr);
 }

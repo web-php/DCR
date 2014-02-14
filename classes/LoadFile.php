@@ -18,18 +18,18 @@ class LoadFile {
     }
 
     /** Установить путь к файлу */
-    private function set_path()
+    private function set_path($doc_html_file)
     {
-        return "http://" . $this->server . "/" . $this->path . substr($_GET['doc'], 7);
+        $patch = "http://" . $this->server . "/" . $this->path . substr($doc_html_file, 7);
+        return $patch ; 
     }
 
     public function select_html($doc_html_file)
     {
-
-        $html = $this->get_file(
-                $this->set_path($doc_html_file));
-
-        return $html;
+        if(!empty($doc_html_file))
+            return $this->get_file( $this->set_path($doc_html_file));
+        else 
+            return FALSE;
     }
 
     /** получить файл с сервера */

@@ -3,87 +3,95 @@
 /**
  * @author Михаил Орехов
  */
-
 class RouterMode {
 
+    private $options = array();
     private $argv = array();
+    private $config = array();
 
     /** var array $router режим запуска и реестр по которому запускать программу */
-    private $router = array("reestr_id" => '', "mode");
+    private $router = array("reestr_id" => '', "mode" => '');
 
-    /** var array $mode_method параметры запуска программы индексатора */
-    public static $mode_method = array("normal_start", "patch_731_732", "patch_111_210", "patch_220" ,"patch_doc_img_html", "doc_update");
-
-    public function __construct($argv)
+    public function __construct(array $config, $argv)
     {
+        $this->options = getopt("r:p:");
         $this->argv = $argv;
+        $this->config = $config;
         $this->verbose();
-        $this->set_routing();
+        $this->set_reestr();
+        $this->set_mode();
     }
-    
+
     /**
-     * 
-     */    
+     * @return array Получить массив режима запуска индексатора
+     */
     public function get_router()
     {
-        return $this->router ;
+        return $this->router;
     }
-    
+
+    /**
+     * Если скрипт запущен с параметом вывода информации вывести режимы запуска
+     */
     private function verbose()
     {
-        if (isset($this->argv[1]) AND in_array($this->argv[1], array('--help', '-help', '-h', '-?', '/help', '/h', '/?')))
+        if (in_array($this->argv[1], array('--help', '-help', '-h', '-?', '/help', '/h', '/?')))
         {
-            //Обычный запуск
-            print "\tUsage: php " . $this->argv[0] . " -reestr_id  [des : normal start]\n";
-            // Перебираем документы из определенного реестра,или все документы если реестр не указан заного собираем поля 731 - 732
-            print "\tUsage: php " . $this->argv[0] . " -patch-731-732 reestr_id [des : reload reestr_id documents]\n";
-            // Перебираем документы из определенного реестра,или все документы заного собираем поля 111 - 210 
-            print "\tUsage: php " . $this->argv[0] . " -patch-111-210 reestr_id [des : reload reestr_id documents]\n";
-            // пересобрать документы из doc_data у которых появились изображения в link
-            print "\tUsage: php " . $this->argv[0] . " -patch-doc-img-html  reestr_id [des : reload reestr_id documents]\n";
-            //общий патч , последовательно запустить все патчи
-            print "\tUsage: php " . $this->argv[0] . " -doc-update  reestr_id [des : run all patch ]\n";
-            //общий патч , последовательно запустить все патчи
-            print "\tUsage: php " . $this->argv[0] . " -patch-220  reestr_id \n";
-
-            exit("\n");
+            foreach ($this->config['MODE_METHOD'] as $description_mode)
+            {
+                @$cfg .= "Usage: php " . $this->argv[0] . " {$description_mode}\n";
+            }
+            exit("\n {$cfg} \n");
         }
     }
-    
+
     /**
-     * Установить режим запуска
+     * Установить реестры с которыми работать 
      */
-    private function set_routing()
+    private function set_reestr()
     {
-        //Определяем параметры запуска индексатора
-        $this->router['mode'] = self::$mode_method[0];
-        if (!empty($this->argv[1]))
+        if (!empty($this->options['r']))
         {
-            if (is_numeric($this->argv[1]))
+            $reestr = explode(" ", $this->options['r']);
+            //Проверяем валидность реестров
+            foreach ($reestr as $id)
             {
-                $this->router['reestr_id'] = (int) $this->argv[1];
+                if (array_key_exists($id, $this->config['ALL_REESTR']))
+                    $this->router['reestr_id'][$id] = $id;
+            }
+        }
+        if (empty($this->router['reestr_id']))
+        {
+            $this->router['reestr_id'] = $this->config['DEFAULT_REESTR'];
+        }
+    }
+
+    /**
+     * Установить режим запуска 
+     */
+    private function set_mode()
+    {
+        $this->router['mode'] = key($this->config['MODE_METHOD']);
+        if (!empty($this->options['p']))
+        {
+            $mode = trim(str_replace("-", "_", $this->options['p']));
+            //Определяем запуск какого режима требуется запустить 
+            if (!empty($this->config['MODE_METHOD'][$mode]))
+            {
+                $this->router['mode'] = $mode;
             }
             else
             {
-                //Определяем запуск какого режима требуется требуется
-                if ($mode_key = array_search(substr(str_replace("-", "_", $this->argv[1]), 1), self::$mode_method))
-                {
-                    $this->router['mode'] = self::$mode_method[$mode_key];
-                    if (!empty($this->argv[2]))
-                    {
-                        if (is_numeric($this->argv[2]))
-                        {
-                            $this->router['reestr_id'] = $this->argv[2];
-                        }
-                    }
-                }
-                else
-                    exit("\n MODE NOT SPECIFIED! \n");
+                throw new Exception("\n Mode not specifed \n");
             }
         }
-        //exit($this->router['mode']."\n");
+        $this->router['mode'] = $this->router['mode'] . "_mode";
+        //Проверить существование метода
+        if (!method_exists('DocumentIndexer', $this->router['mode']))
+        {
+            throw new Exception("\n Method : " . $this->router['mode'] . " - not exists! \n");
+        }
     }
 
 }
-
 ?>

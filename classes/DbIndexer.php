@@ -8,10 +8,12 @@
 class DbIndexer {
 
     private $pdo;
+    private $pdo_html;
 
     public function __construct($pdo)
     {
-        $this->pdo = $pdo;
+        $this->pdo = $pdo['DATA'];
+        $this->pdo_html = $pdo['HTML'];
     }
 
     /**

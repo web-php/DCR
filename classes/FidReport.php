@@ -1,7 +1,4 @@
 <?php
-
-require_once __DIR__ . "/FidKeyGen.php";
-
 class FidReport {
 
     private $pdo;
