@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Инициализировать подключение через PDO драйвер
+ */
 class Db extends PDO {
 
     public function __construct($config)
