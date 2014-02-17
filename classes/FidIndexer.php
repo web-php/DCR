@@ -173,12 +173,7 @@ class FidIndexer {
         }
     }
 
-    /**
-     * Обработать ссылку на документ , собрать данные , добавть документ в doc_data
-     * @param array $row массив выборки из link конкатировать счетчик обработанных документов
-     * @param string $html в некоторых функция происходит предварительная выборка html таких как patch_doc_img_html_mode ,что бы избежать повторного запроса файла передадим его.
-     */
-    private function insert_doc_data(array $row, $html = '')
+    function insert_doc_data(array $row, $html = '')
     {
 
         $p540_file = '';

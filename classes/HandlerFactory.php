@@ -17,10 +17,10 @@ class HandlerFactory {
     /**
      * Вернуть в зависимости от условия требуемый экземпляр класса для работы с реестром реестра
      */
-    public static function GetInstance($id_reestr, array $config, array $pdo)
+    public static function GetInstance($reestr_id, array $config, array $pdo)
     {
         //Проверить существование компонентов
-        $Class = "Reestr_{$id_reestr}";
+        $Class = "Reestr_{$reestr_id}";
         $PatchClass = __DIR__ . "/ReestrHandler/{$Class}.php";
         if (array_key_exists($Class, self::$HandlerName))
         {
@@ -29,11 +29,13 @@ class HandlerFactory {
         }
         else
         {
-            throw new Exception(" Handler : Reestr_{$id_reestr} is not defined ");
+            throw new Exception(" Handler : Reestr_{$reestr_id} is not defined ");
         }
-
+        //Загрузить файл класса , вернуть экземпляр класса
         require( $PatchClass );
-        return new $Class($config, $pdo);
+        $Instance = new $Class( $config, $pdo );
+        $Instance->set_log( $reestr_id ); 
+        return $Instance;
     }
 
 }

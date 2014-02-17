@@ -28,7 +28,6 @@ class DocumentIndexer {
         $this->mode = $router['mode']; 
         $this->config = $config;
         $this->pdo = $pdo ; 
-        $this->LoadFile = new LoadFile($config) ; 
         $this->DbIndexer = new DbIndexer($pdo);
     }
     
@@ -52,20 +51,13 @@ class DocumentIndexer {
      */
     private function normal_start_mode($reestr_id)
     {
-        $i = 0;
         while ($row = $this->DbIndexer->get_next_link($reestr_id)) 
         {
-            if($html = $this->LoadFile->select_html($row['doc_html_file']))
+            if($this->HandlerReestr->parse($row))
             {
-                print_r($html);
-                exit ; 
-            }
-            else 
-            {
-                print("\r".$i++);
+                $this->HandlerReestr->save( "insert_doc_data" );
             }
         }
-        //print_r("Парсер запущен") ;
     }
     
     private function doc_update_mode()

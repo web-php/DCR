@@ -2,7 +2,7 @@
 
 /**
  * Логика обработки запросов  и обращений к базе данных программы индексатора документов 
- * @version dcr v1.1
+ * @version dcr v2.0
  * @author Mikhail Orekhov <mikhail@edwaks.ru>
  */
 class DbIndexer {
@@ -16,27 +16,23 @@ class DbIndexer {
         $this->pdo_html = $pdo['HTML'];
     }
 
+
     /**
      * Добавить документ в таблицу doc_data 
      */
-    public function insert_doc_data(
-    $link_id, $link_number, $p732, $p731, $p732_init, $p731_init, $p731_date, $p210, $p111, $p540_file, $p540_txt, $doc_link, $doc_html_file, $doc_img_file, $doc_list1_file, $reestr_id, $status_id, $status_date, $doc_img_link, $doc_list1_link
-    )
+    public function insert_doc_data(array $fields)
     {
+        $field_key = array_keys($fields);
+        $field_val = array_values($fields) ;
+        $field_str = array_fill(0 , count($fields) , "?");
+        
         $sth = $this->pdo->prepare("
-			INSERT INTO doc_data
-				(`link_id`, `doc_number`, `p732`, `p731`, `p732_init`, `p731_init`, `p731_2_date` , `p210`, `p111`, `p540_file`, `p540_txt`,
-				`doc_link`, `doc_html_file`, `doc_img_file`, `doc_list1_file`, `reestr_id`, `doc_status_id`, `doc_status_date` ,
-				`doc_img_link`, `doc_list1_link`
-				)
+			INSERT INTO doc_data 
+                            (".implode( "," , $field_key ).")
 			VALUES
-				(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)"
-        );
-        $sth->execute(
-                array($link_id, $link_number, $p732, $p731, $p732_init, $p731_init, $p731_date, $p210, $p111, $p540_file, $p540_txt,
-                    $doc_link, $doc_html_file, $doc_img_file, $doc_list1_file, $reestr_id, $status_id, $status_date,
-                    $doc_img_link, $doc_list1_link)
-        );
+                            (". implode( "," , $field_str ) .")"
+    );
+        $sth->execute( $field_val );
         return $this->pdo->lastInsertId();
     }
 
@@ -164,7 +160,7 @@ class DbIndexer {
         return $sth->rowCount();
     }
 
-    public function get_p540_txt_7_reestr($doc_number)
+    public function get_p540_txt($doc_number)
     {
         $dbres = $this->pdo->prepare("
 			SELECT	`p540_txt`
