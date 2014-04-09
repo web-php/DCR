@@ -4,175 +4,121 @@
  * Обработчик документов из 6 реестров
  * @author Михаил Орехов
  */
-class Reestr_6 extends ReestrAbstract {
+class Reestr_6 extends TradeMark {
 
-    //put your code here 
-    public function parse($row)
+    protected function parse_mktu()
     {
-        if (!$html = $this->select_html($row['doc_html_file']))
-            return false;
-        //Обработать стандратные поля
-        $this->set_default_fields($row);  
-        //Получаем поля документа
-        $p731 = $this->get_p731($html);
-        $p732 = $this->get_p732($html);
-        $status = $this->FidDocStatus->parse_status_id($html, $reestr_id);
-        $this->fields['link_number'] = $this->get_link_number($link);
-        $this->fields['p732'] = $p732['732'];
-        $this->fields['p731'] = $p731['731'];
-        $this->fields['p732_init'] = $p732['732_init'];
-        $this->fields['p731_init'] = $p731['731_init'];
-        $this->fields['p731_date'] = $this->get_published($html);
-        $this->fields['p210'] = $this->get_p210($html);
-        $this->fields['p111'] = $this->get_p111($html);
-        $this->fields['p740'] = $this->get_field(740) ; 
-        $this->fields['p750'] = $this->get_field(750); 
-        $this->fields['status_id'] = ( $status['id'] ? $status['id'] : 4);
-        $this->fields['status_date'] = $status['date'];
-        $this->fields['doc_img_link'] = $this->get_img_href($html);
-        $this->fields['doc_list1_link'] = $this->get_list1_href($html);
-        //print_r($html);
-    }
-    
-    
-    /** Получить DocNumber */
-    protected function get_link_number($link)
-    {
-        if (preg_match("#DocNumber=(\d+)#", $link, $link_num_res))
-        {
-            return $link_num_res[1];
-        }
+
+        Registry::get("Log")->log("get_mktu");
+        $this->mktu['arr'] = $this->alter_get_mktu();
+
+        Registry::get("Log")->log("set mktu status");
+        $this->mktu['511'] = (!empty($this->mktu['arr']) ? TRUE : FALSE);
+
+        Registry::get("Log")->log("get_sub_class");
+        $this->mktu['sub'] = $this->get_sub_class();
     }
 
-    // Номер регистрации
-    protected function get_p111($html)
-    {
-        $reg_arr[0] = "#\(111\)\s*<I>.*?</I>\s*<B>(\d+)</B>#i";
-        $reg_arr[1] = "#<B>\(111\)</B>\s*Номер регистрации</TD><TD CLASS=CL1><B>(\d*)</B>#i";
-        foreach ($reg_arr as $reg)
-        {
-            if (preg_match($reg, $html, $p111_res))
-            {
-                return trim(($p111_res[1]));
-            }
-        }
-        return FALSE;
-    }
+    private $split_marker = array(
+        '\(511\)',
+        'Факсимильные изображения',
+        'Извещения об изменениях, относящихся к регистрации товарного знака'
+    );
+    private $clean_from = array(
+        'Классы МКТУ и перечень товаров и/или услуг:',
+        'Перечень товаров дополнен изделиями класса '
+    );
 
-    //----------------------------------
-    // Номер заявки
-    protected function get_p210($html)
+    private function extract_511_paragraph()
     {
-        if (preg_match("#\(210\)\s*<I>.*?</I>\s*<B>(\d+)</B>#i", $html, $p210_res))
-        {
-            return trim($p210_res[1]);
-            print $p210_res;
-        }
-        return FALSE;
+
+        if (!strstr($this->html, "(511)"))
+            return '';
+        $split_pattern = '/(' . implode('|', $this->split_marker) . ')/i';
+        $html_parts = preg_split($split_pattern, $this->html);
+        if (isset($html_parts[1]))
+            return trim(str_replace($this->clean_from, '', $html_parts[1]));
+        else
+            return '';
     }
 
     /**
-     * Получить поле c датой
+     *  Альтернативаня функция получения мкту в документе  ,в 10 раз быстрей метода с регулярками
      */
-    protected function get_date_field($field, $html)
+    private function alter_get_mktu()
     {
-        //exit($html);
-        if (preg_match("#\($field\).+?<B>(.*?)</B>#i", $html, $field_res))
+        $mktu_arr = array();
+        $this->shd->load($this->html);
+        Registry::get("Log")->log("select mktu class start:");
+        $mktu = $this->shd->find("p[class=p1] b");
+        foreach ($mktu as $val)
         {
-            $arr_date = date_parse(str_replace(".", "-", $field_res[1]));
-            return $arr_date['year'] . str_pad($arr_date['month'], 2, 0, STR_PAD_LEFT) . str_pad($arr_date['day'], 2, 0, STR_PAD_LEFT);
-        }
-        return '';
-    }
-
-    /**
-     * Получить Заявителя
-     * @param string $html
-     * @return array $p731 Верхнее и нижнее поле 
-     */
-    protected function get_p731($html)
-    {
-        if (preg_match_all("#\(731\)\s*<I>.*?</I>\s*<BR><B>(.*?)</B>#i", $html, $p731_res))
-        {
-            $p731 = array(
-                "731" => trim($p731_res[1][count($p731_res[1]) - 1]),
-                "731_init" => trim($p731_res[1][0]));
-            return $p731;
-        }
-        return FALSE;
-    }
-
-    //----------------------------------
-    // Правообладатель
-    protected function get_p732($html)
-    {
-        $reg_arr[0] = "#\(732\)\s*<I>.*?</I><BR><B>(.*?)</B>#i";
-        $reg_arr[1] = "#<I>Правообладатель.*?:</I><BR><B>(.*?)</B>#i";
-        $reg_arr[2] = "#<B>\(732\)</B>\s*Имя и адрес владельца</TD><TD CLASS=CL1><B>(.*?)</B>#i"; //9 реестр
-        //Правообладатель
-        foreach ($reg_arr as $reg)
-        {
-            if (preg_match_all($reg, $html, $p732_res))
+            $mktu_str = $val->innertext;
+            if (preg_match("#^(?P<mktu>[0-9]{1,2}\s)#", $mktu_str, $mktu_num))
             {
-                //print_r($p732_res);
-                $p732 = array(
-                    "732" => trim($p732_res[1][count($p732_res[1]) - 1]),
-                    "732_init" => trim($p732_res[1][0]));
-                return $p732;
+                $mktu_str = trim($mktu_str);
+                $mktu_num = str_pad(trim($mktu_num['mktu']), 2, "0", STR_PAD_LEFT);
+                $mktu_str = str_replace($mktu_num, "", $mktu_str);
+                
+                $mktu_arr[$mktu_num] = $this->cheked_space($mktu_str);
             }
         }
-        return FALSE;
+        $this->shd->clear();
+        return($mktu_arr);
     }
 
-    //Взять полсденюю публикацию изменений
-    protected function get_published($html)
+    /** получить классы мкту */
+    private function get_mktu()
     {
-        //<I>Дата публикации:</I> <B><A HREF='http://www.fips.ru/cdfi/fips.dll?ty=29&docid=60&cl=9&path=http://195.208.85.248/Archive/TM/2007FULL/2007.03.12/DOC/DOCURUWK/DOC000V1/D00000D1/00000060/document.pdf' TARGET='_blank' TITLE='Официальная публикация в формате PDF'>12.03.2007</A></B>
-        if (preg_match_all('#<I>.*?:</I>\s<B><a.*?>(.*?)</a></B>#i', $html, $p731_date))
+        $mktu_arr = array();
+        //найти все ключи МКТУ
+        preg_match_all("#\D+(?P<mktu>[0-9]{1,2}\s)#", $this->mktu['511'], $mktu_num);
+        if (empty($mktu_num['mktu']))
+            return "";
+        //найти все значения МКТУ
+        foreach ($mktu_num['mktu'] as $mktu)
         {
-            $date = explode(".", $p731_date[1][count($p731_date[1]) - 1]);
-            return $date[2] . $date[1] . $date[0];
-        }
-        return FALSE;
-    }
-
-    //----------------------------------------
-    //href картинка в документе
-    protected function get_img_href($html)
-    {
-        if (preg_match_all('#<IMG\s+SRC="(.*?)"#i', $html, $img_res))
-        {
-
-            foreach ($img_res[1] as $img_name)
+            if ($mktu > 45)
+                continue;
+            preg_match("#$mktu.*?(?P<value>.*?)(\.|;)</b></p>#im", $this->mktu['511'], $mktu_text);
+            if (!empty($mktu_text['value']))
             {
-                if (!strstr($img_name, "RFP_LOGO"))
-                {
-                    return $img_name;
-                }
+                //убрать лишние пробелы
+                $mktu_text['value'] = $this->cheked_mktu($mktu_text['value']);
+                $mktu = str_pad(trim($mktu), 2, "0", STR_PAD_LEFT);
+                $mktu_arr[$mktu] = trim(str_replace("-", "", $mktu_text['value']));
             }
         }
-        return FALSE;
+        return $mktu_arr;
     }
 
-    //----------------------------------------
-    //href скан заявления
-    protected function get_list1_href($html)
+    protected function get_designation($html)
     {
-        if (preg_match_all('#<A HREF="(.*?)".*?>Лист 1</A>#i', $html, $list1_res))
+        $marker = array("Указание об изменениях", "Характер внесенных изменений");
+        foreach ($marker as $value)
         {
-            return $list1_res[1][0];
+            if ($designation = $this->get_field($value, $html))
+                return $designation;
         }
-        return FALSE;
+        return "";
     }
 
-    public function save($save_method)
+    /** Получить поля характерные для 6-7 реестра */
+    protected function get_modification_field( $part )
     {
-        if (method_exists($this->DbIndexer, $save_method))
-        {
-            $this->DbIndexer->$save_method($this->fields) ; 
-        } else {
-            throw new Exception(" Method not exist ");
-        }
+        $notice['date_pub'] = $this->get_published($part);
+        $notice['type_edits'] = $this->get_type_edits($part);
+        $notice['designation'] = $this->get_designation($part);
+        $notice['p580'] = $this->format_date(
+                $this->get_field("Дата внесения изменений в Госреестр", $part));
+        $notice['p732'] = $this->get_field(732, $part);
+        $notice['p791'] = $this->get_field(791, $part);
+        $notice['p793'] = $this->get_field(793, $part);
+        $notice['p740'] = $this->get_field(740, $part);
+        $notice['p770'] = $this->get_field(770, $part);
+        $notice['p771'] = $this->get_field(771, $part);
+        $notice['p750'] = $this->get_p750($part);
+        return $notice;
     }
 
 }

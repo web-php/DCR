@@ -46,7 +46,7 @@ class FidIndexer {
             $this->$method($reestr_id);
         else
         {
-            $this->log("the method is not defined => " . $method);
+            Registry::get("Log")->log("the method is not defined => " . $method , "err");
             exit;
         }
     }
@@ -60,10 +60,12 @@ class FidIndexer {
 
             if (!$html = $this->select_html($row['doc_html_file']))
             {
-                $this->log("file not found : " . $row['doc_html_file']);
+                Registry::get("Log")->log( "file not found : " , "err" );
+                Registry::get("Log")->log( $row['doc_html_file'] );
                 continue;
             }
-            $this->log("Update file : " . $row['doc_html_file']);
+            
+            Registry::get("Log")->log( "Update file : " . $row['doc_html_file'] );
 
             $p731 = $this->get_p731($html);
             $p732 = $this->get_p732($html);
@@ -131,9 +133,7 @@ class FidIndexer {
             //обновить статистику получаемых документов
             $this->docs_patched += $this->DbIndexer->update_731($row['id'], $p731[0], $p732[0], $p731[1], $p732[1], $p731_date);
             //TODO : реализовать конвертирование ASCII в UTF-8
-            $this->log("p731 => " . $p731[0]);
-            $this->log("p732 => " . $p732[0]);
-            $this->log("p731_date => " . $p731_date);
+
         }
     }
 
@@ -151,8 +151,6 @@ class FidIndexer {
             $p151 = $this->get_date_field(151,$html);
             //обновить статистику получаемых документов
             $this->docs_patched += $this->DbIndexer->update_220($row['id'], ($p220 ? $p220 : NULL) , ($p151 ? $p151 : NULL));
-            $this->log("p220 => " . $p220);
-            $this->log("p151 => " . $p151);
             
         }
     }
@@ -168,8 +166,6 @@ class FidIndexer {
             $p111 = $this->get_p111($html);
             //Обновить документ
             $this->docs_patched += $this->DbIndexer->update_9_reestr($row['id'], $p210, $p111);
-            $this->log("p210 => " . $p210);
-            $this->log("p111 => " . $p111);
         }
     }
 
@@ -423,23 +419,7 @@ class FidIndexer {
         return $this->docs_patched;
     }
 
-    /**
-     * Логировать парсер
-     */
-    private function log($msg)
-    {
-        $msg = "[" . $this->log_id . "]" . $msg . "\n";
-        if (Cfg::DEBUGGING_PRINT)
-            print $msg;
-        //Записать лог
-        if (Cfg::DEBUGGING_LOG)
-        {
-            $current = file_get_contents(Cfg::DEBUGGING_FILE);
-            $current .= $msg;
-            file_put_contents(Cfg::DEBUGGING_FILE, $current);
-        }
-    }
-
+   
     /**
      * Получить html содержмое из файла
      */
@@ -455,7 +435,7 @@ class FidIndexer {
             $doc_html_file = $this->datadir . $doc_html_file;
             if (!file_exists($doc_html_file))
             {
-                $this->log("error $doc_html_file no exists");
+                Registry::get("Log")->log("html not exists" , "err");
                 return FALSE;
             }
             $html = file_get_contents($doc_html_file);

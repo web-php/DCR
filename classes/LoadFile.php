@@ -10,25 +10,30 @@ class LoadFile {
     private $server;
     private $path;
 
-    public function __construct($config)
+    public function __construct()
     {
         $this->server = "fips-maksed.ru";
         $this->path = "/";
-        $this->config = $config;
+        $this->config = Registry::get("CONFIG") ;
     }
 
     /** Установить путь к файлу */
     private function set_path($doc_html_file)
     {
         $patch = "http://" . $this->server . "/" . $this->path . substr($doc_html_file, 7);
-        return $patch ; 
+        return $patch;
     }
 
     public function select_html($doc_html_file)
     {
-        if(!empty($doc_html_file))
-            return $this->get_file( $this->set_path($doc_html_file));
-        else 
+        if (!empty($doc_html_file))
+        {
+            $html = $this->get_file($this->set_path($doc_html_file));
+            //Преобразовать html сушности символов в UTF-8 аналоги
+            $decode = html_entity_decode($html, ENT_COMPAT, 'UTF-8');
+            return $decode ; 
+        }
+        else
             return FALSE;
     }
 
