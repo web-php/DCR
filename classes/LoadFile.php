@@ -14,7 +14,7 @@ class LoadFile {
     {
         $this->server = "fips-maksed.ru";
         $this->path = "/";
-        $this->config = Registry::get("CONFIG") ;
+        $this->config = Registry::get("CONFIG");
     }
 
     /** Установить путь к файлу */
@@ -31,7 +31,7 @@ class LoadFile {
             $html = $this->get_file($this->set_path($doc_html_file));
             //Преобразовать html сушности символов в UTF-8 аналоги
             $decode = html_entity_decode($html, ENT_COMPAT, 'UTF-8');
-            return $decode ; 
+            return $decode;
         }
         else
             return FALSE;
@@ -40,6 +40,7 @@ class LoadFile {
     /** получить файл с сервера */
     private function get_file($path)
     {
+        $info = "";
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $path);
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
@@ -50,10 +51,10 @@ class LoadFile {
         $content = curl_exec($ch);
         $info = curl_getinfo($ch);
         curl_close($ch);
-        if ($info['http_code'] === 200)
+        if ($info['http_code'] == 200)
             return $content;
-        else
-            return FALSE;
+        
+        return FALSE;
     }
 
 }

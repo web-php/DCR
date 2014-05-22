@@ -12,17 +12,97 @@ class DbIndexer {
     private $prefix_mapping = array();
     public static $count_insert = 0;
 
-    public function __construct(array $pdo) {
+    public function __construct(array $pdo)
+    {
+        // TODO : бардак в определение ресурсов подключения к базам
         $this->pdo = $pdo['DATA'];
         $this->pdo_html = $pdo['HTML'];
         $this->prefix_mapping['dcr'] = $pdo['HTML'];
         $this->prefix_mapping['data'] = $pdo['DATA'];
+        $this->prefix_mapping['resurs'] = $pdo['RESURS'];
+        $this->config = Registry::get("CONFIG");
+    }
+
+    /**
+     * @staticvar null $dbres
+     * @param array $maping
+     * @param type $bd_prefix
+     * @param type $table_migration
+     * @return type
+     */
+    public function get_data_migration(array $maping, $bd_prefix, $table_migration, $add_condition = false, $add_fields = false)
+    {
+        static $dbres = NULL;
+
+        $table_field = implode(",", array_values($maping));
+        if ($dbres == NULL)
+        {
+            $sql = "SELECT $table_field " . ($add_fields ? $add_fields : "") . "FROM $table_migration  " . ($add_condition ? $add_condition : "") . ($this->config['TEST_RUN'] ? "LIMIT " . $this->config['TEST_RUN'] : "") . ";";
+            Registry::get("Log")->log($sql);
+            $dbres = $this->prefix_mapping[$bd_prefix]->query($sql);
+        }
+        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC)))
+        {
+            $dbres = NULL;
+        }
+        return $row;
+    }
+
+    /**
+     * Вставка данных для миграции реестров
+     * @param array $maping
+     * @param array $data
+     */
+    public function insert_data_migration(array $maping, array $data, $reestr_id)
+    {
+        $update = "";
+        $pdo = $this->pdo;
+
+
+        foreach ($maping as $key => $val)
+        {
+            $update .= "$key = :$key, ";
+        }
+        $sql = "INSERT INTO doc_data"
+                . " (" . implode(",", array_keys($maping)) . " , reestr_id ) "
+                . " VALUES "
+                . " (:" . implode(" , :", array_keys($maping)) . " , :reestr_id )"
+                . "ON DUPLICATE KEY UPDATE
+                                $update
+                                `reestr_id` = :reestr_id";
+        $stmt = $pdo->prepare($sql);
+        $call = function($data) use ( $stmt, $maping ) {
+            foreach ($maping as $f_name => $f_value)
+            {
+                $stmt->bindValue(":" . $f_name, (!empty($data[$f_value]) ? $data[$f_value] : NULL));
+                //, (is_string($f_value) ? PDO::PARAM_STR : PDO::PARAM_INT)
+            }
+            $stmt->execute();
+        };
+        Registry::get("Log")->log("beginTransaction");
+        $pdo->beginTransaction();
+        $stmt->bindValue(":reestr_id", $reestr_id, PDO::PARAM_INT);
+        array_walk($data, $call);
+        $pdo->commit();
+    }
+
+    /**
+     * Отключение включение ключей для больших вставок данных
+     * @param type $bd_prefix
+     * @param type $table_name
+     * @param type $action
+     */
+    public function action_keys($bd_prefix, $table_name, $action)
+    {
+        Registry::get("Log")->log("$action keys");
+        $this->prefix_mapping[$bd_prefix]->query("alter table $table_name $action keys");
     }
 
     /**
      * Добавить документ в таблицу doc_data 
      */
-    public function insert_doc_data(array $fields) {
+    public function insert_doc_data(array $fields)
+    {
         $field_key = array_keys($fields);
         $field_val = array_values($fields);
         $field_str = array_fill(0, count($fields), "?");
@@ -38,7 +118,8 @@ class DbIndexer {
     }
 
     //----------------------------------
-    public function update_link_date($link_id) {
+    public function update_link_date($link_id)
+    {
         $sth = $this->pdo->prepare("
 			UPDATE link
 			SET fid_html = NOW()
@@ -50,7 +131,8 @@ class DbIndexer {
         return $sth->rowCount();
     }
 
-    public function update_global_date($doc_id) {
+    public function update_global_date($doc_id)
+    {
         $sth = $this->pdo->prepare("
 			UPDATE link
 			SET fid_html = NOW()
@@ -65,7 +147,8 @@ class DbIndexer {
     /**
      * Обновить поля таблицы doc_data p731 , p732 , верхние поля вынес в p731_init , p732_init p731_2_date
      */
-    public function update_731($id, $p731, $p732, $p731_init, $p732_init, $p731_2_date) {
+    public function update_731($id, $p731, $p732, $p731_init, $p732_init, $p731_2_date)
+    {
         $sth = $this->pdo->prepare("
 			UPDATE doc_data SET 
                             `p731` = ? , 
@@ -83,7 +166,8 @@ class DbIndexer {
     /**
      * Обновить поля таблицы doc_data p220
      */
-    public function update_220($id, $p220, $p151) {
+    public function update_220($id, $p220, $p151)
+    {
         $sth = $this->pdo->prepare("
 			UPDATE doc_data SET 
                             `p220` = ? ,
@@ -97,7 +181,8 @@ class DbIndexer {
     /**
      * Обновить документы 9го реестра по полям 111 210 
      */
-    public function update_9_reestr($id, $p210, $p111) {
+    public function update_9_reestr($id, $p210, $p111)
+    {
         $sth = $this->pdo->prepare("
 			UPDATE doc_data SET 
                             `p210` = ? , 
@@ -112,9 +197,11 @@ class DbIndexer {
      * Обновить документ
      * @param array $data $data['fields'] -> содержимое полей $data['id'] -> id документа который требуется обновить
      */
-    public function update_doc_data(array $data) {
+    public function update_doc_data(array $data)
+    {
         $filer_field = array_filter($data['fields']);
-        if (!empty($filer_field)) {
+        if (!empty($filer_field))
+        {
             $field_key = array_keys($filer_field);
             $field_val = array_values($filer_field);
 
@@ -133,7 +220,8 @@ class DbIndexer {
     /**
      * Обновить изображения в doc_data
      */
-    public function update_img_html($id, $doc_img_link, $doc_img_file, $status_id, $status_date) {
+    public function update_img_html($id, $doc_img_link, $doc_img_file, $status_id, $status_date)
+    {
         $sth = $this->pdo->prepare("
 			UPDATE doc_data SET 
                             `doc_img_file` = ? , 
@@ -146,25 +234,31 @@ class DbIndexer {
         return $sth->rowCount();
     }
 
-    public function get_p540_txt($doc_number) {
+    public function get_p540_txt($doc_number)
+    {
         $dbres = $this->pdo->prepare("
 			SELECT	`p540_txt`
 			FROM 	`doc_data`
 			WHERE	`doc_number` = ?
 		");
         $dbres->execute(array($doc_number));
-        if ($row = $dbres->fetch(PDO::FETCH_ASSOC)) {
+        if ($row = $dbres->fetch(PDO::FETCH_ASSOC))
+        {
             return $row['p540_txt'];
-        } else {
+        }
+        else
+        {
             return NULL;
         }
     }
 
     //получить документы из doc_data у которых появились изображения в link
-    public function patch_doc_img_html($reestr_id = "") {
+    public function patch_doc_img_html($reestr_id = "")
+    {
         static $dbres = NULL;
 
-        if ($dbres == NULL) {
+        if ($dbres == NULL)
+        {
             $dbres = $this->pdo->query("
                 SELECT
                         link.id,
@@ -183,17 +277,20 @@ class DbIndexer {
 			");
         }
 
-        if (!($row = $dbres->fetch(PDO::FETCH_NUM))) {
+        if (!($row = $dbres->fetch(PDO::FETCH_NUM)))
+        {
             $dbres = NULL;
         }
         return $row;
     }
 
     //----------------------------------
-    public function get_next_link($reestr_id) {
+    public function get_next_link($reestr_id)
+    {
         static $dbres = NULL;
 
-        if ($dbres == NULL) {
+        if ($dbres == NULL)
+        {
             $dbres = $this->pdo->query("
 				SELECT	
                                     link.id , 
@@ -220,7 +317,8 @@ class DbIndexer {
 			");
         }
 
-        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC))) {
+        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC)))
+        {
             $dbres = NULL;
         }
         return $row;
@@ -229,9 +327,11 @@ class DbIndexer {
     /**
      * Получить документы на обновление
      */
-    public function select_doc_update($reestr_id = '', $id_doc = '', $all = '') {
+    public function select_doc_update($reestr_id = '', $id_doc = '', $all = '')
+    {
         static $dbres = NULL;
-        if ($dbres == NULL) {
+        if ($dbres == NULL)
+        {
             $sql = "SELECT	
                         link.id , 
                         doc_data.id as doc_data_id , 
@@ -251,16 +351,52 @@ class DbIndexer {
                         1 = 1
                         " . (!empty($id_doc) ? "AND doc_data.id = $id_doc " :
                             ( empty($all) ? " AND link.parsed_date > link.fid_html " : "" ) ) . "
-                        " . (!empty($reestr_id) ? "AND doc_data.reestr_id = $reestr_id " : "")
-                    . "
+                        " . (!empty($reestr_id) ? "AND doc_data.reestr_id = $reestr_id " : "") . "
                     ORDER BY link.id ;";
             //print_r($sql);
             $dbres = $this->pdo->query($sql);
         }
-        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC))) {
+        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC)))
+        {
             $dbres = NULL;
         }
         return $row;
+    }
+
+    /**
+     * Получить документы с заполненным полем 540
+     */
+    public function select_540($reestr_id = '', $id_doc = '', $all = '')
+    {
+        static $dbres = NULL;
+        if ($dbres == NULL)
+        {
+            $sql = "SELECT 
+                        id , p540_txt 
+                    FROM doc_data 
+                    WHERE 
+                        p540_txt <> '' AND p540_txt IS NOT NULL 
+                        " . (!empty($reestr_id) ? "AND doc_data.reestr_id = $reestr_id " : "" ) . "
+                        " . (!empty($id_doc) ? "AND doc_data.id = $id_doc " : "" );
+            //print_r($sql);
+            $dbres = $this->pdo->query($sql);
+        }
+        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC)))
+        {
+            $dbres = NULL;
+        }
+        return $row;
+    }
+
+    public function select_id_distinct()
+    {
+        $sql = "SELECT DISTINCT(doc_id) FROM dcr_fraza_rel";
+        $dbres = $this->pdo_html->query($sql);
+        while ($arr = $dbres->fetch(PDO::FETCH_ASSOC)) {
+            $doc_arr[$arr['doc_id']] = true;
+        }
+
+        return $doc_arr;
     }
 
     /**
@@ -269,9 +405,11 @@ class DbIndexer {
      * @param int $id id строки (необязательный параметр для теста 1го документа)
      * @return Array $row выборка полей из doc_data
      */
-    public function get_next_doc($reestr_id = '', $id = '') {
+    public function get_next_doc($reestr_id = '', $id = '')
+    {
         static $dbres = NULL;
-        if ($dbres == NULL) {
+        if ($dbres == NULL)
+        {
             $dbres = $this->pdo->query("
 				SELECT
                                    id , reestr_id , doc_html_file  
@@ -285,21 +423,25 @@ class DbIndexer {
 			");
         }
 
-        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC))) {
+        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC)))
+        {
             $dbres = NULL;
         }
         return $row;
     }
 
     //
-    public function get_mktu_ru() {
+    public function get_mktu_ru()
+    {
         static $dbres = NULL;
-        if ($dbres == NULL) {
+        if ($dbres == NULL)
+        {
             $sql = "SELECT id , RU FROM mktu_catalog WHERE RU IS NOT NULL ORDER BY id ;";
             $dbres = $this->pdo_html->query($sql);
         }
 
-        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC))) {
+        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC)))
+        {
             $dbres = NULL;
         }
         return $row;
@@ -308,9 +450,11 @@ class DbIndexer {
     /**
      * Получить документы без заполненных полей p220
      */
-    public function get_noupdate_p220($reestr_id = '', $id = '') {
+    public function get_noupdate_p220($reestr_id = '', $id = '')
+    {
         static $dbres = NULL;
-        if ($dbres == NULL) {
+        if ($dbres == NULL)
+        {
             $sql = "
 				SELECT
                                    id , reestr_id , doc_html_file  
@@ -326,7 +470,8 @@ class DbIndexer {
             $dbres = $this->pdo->query($sql);
         }
 
-        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC))) {
+        if (!($row = $dbres->fetch(PDO::FETCH_ASSOC)))
+        {
             $dbres = NULL;
         }
         return $row;
@@ -337,9 +482,11 @@ class DbIndexer {
      * @param array $mktu массив в виде mktu => description
      * @param array $doc_data_id id документа ключ на doc_data.id
      */
-    public function insert_mktu(array $mktu, $doc_data_id) {
+    public function insert_mktu(array $mktu, $doc_data_id)
+    {
         $update = "";
-        foreach ($mktu as $key => $val) {
+        foreach ($mktu as $key => $val)
+        {
             $update .= "f511_{$key} = '" . $val . "' , ";
         }
         $sql = "INSERT INTO doc_f511
@@ -363,7 +510,8 @@ class DbIndexer {
     }
 
     /** Удалить все мкту определенного документа */
-    public function delete_doc_class_rel($doc_data_id) {
+    public function delete_doc_class_rel($doc_data_id)
+    {
         $sth = $this->pdo->prepare("DELETE 
                 FROM doc_class_rel 
                 WHERE (doc_id= ? )");
@@ -377,11 +525,13 @@ class DbIndexer {
      * @param array $mktu массив в виде mktu => description , преобразуется в массив ключей
      * @param array $doc_data_id id документа ключ на doc_data.id
      */
-    public function insert_doc_class_rel(array $mktu, $doc_data_id) {
+    public function insert_doc_class_rel(array $mktu, $doc_data_id)
+    {
         //TODO : Заменить конструкцию на более безопасный вариант $stmt->bindParam(':value', $value);
         $mktu = array_keys($mktu);
         $query = array();
-        foreach ($mktu as $val) {
+        foreach ($mktu as $val)
+        {
             $query[] = "($doc_data_id," . (int) $val . ")";
         }
 
@@ -390,7 +540,8 @@ class DbIndexer {
     }
 
     /** Добавить модификации документа */
-    public function insert_doc_modification($doc_id, array $notice, array $modification_fields) {
+    public function insert_doc_modification($doc_id, array $notice, array $modification_fields)
+    {
 
         $fields = array_keys($modification_fields);
         $sql = "INSERT INTO doc_modification 
@@ -403,12 +554,15 @@ class DbIndexer {
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':doc_id', $doc_id);
         //Создать бинды по полям
-        foreach ($modification_fields as $name => $val) {
+        foreach ($modification_fields as $name => $val)
+        {
             $stmt->bindParam(':' . $name, $modification_fields[$name]);
         }
         //Обойти все модификации по документу
-        foreach ($notice as $value) {
-            foreach ($modification_fields as $name => $val) {
+        foreach ($notice as $value)
+        {
+            foreach ($modification_fields as $name => $val)
+            {
                 $modification_fields[$name] = (!empty($value[$name]) ? $value[$name] : NULL);
             }
             $stmt->execute();
@@ -419,7 +573,8 @@ class DbIndexer {
      * @param int $reestr_id ид реестра
      * @param string $type_edits тип изменений  
      */
-    public function insert_type_edits($reestr_id, $type_edits) {
+    public function insert_type_edits($reestr_id, $type_edits)
+    {
         $sql = "INSERT INTO type_edits 
                     (reestr_id , type_edits , hash) 
                 VALUES 
@@ -433,21 +588,20 @@ class DbIndexer {
         $stmt->bindParam(':type_edits', $type_edits);
         $stmt->bindParam(':hash', $hash);
         $stmt->execute();
-
-
         return $this->pdo->lastInsertId();
     }
 
     /** Общая связь фраз к классам */
-    public function dcr_fraza_rel($doc_id, $values) {
-        $pdo = $this->pdo_html ; 
+    public function dcr_fraza_rel($doc_id, $values)
+    {
+        $pdo = $this->pdo_html;
         $pdo->query("alter table dcr_fraza_rel disable keys");
         $stmt = $pdo->prepare("
 			INSERT IGNORE INTO `dcr_fraza_rel`
 				( `class_id`, `doc_id` , `fraza_id`)
 			VALUES
 				( :class_id, :doc_id , :fraza_id) ; ");
-        
+
         $stmt->bindValue(":doc_id", $doc_id);
         $call = function($values) use ($stmt) {
             $stmt->bindValue(":class_id", $values['class_id']);
@@ -455,56 +609,56 @@ class DbIndexer {
             $stmt->execute();
         };
         $dbh = $pdo->beginTransaction();
-        if (is_array($values)) {  
-            
+        if (is_array($values))
+        {
+
             array_walk($values, $call);
-            
-            
-        } else {
+        }
+        else
+        {
             $return = false;
             $call($values);
         }
         $pdo->commit();
         $pdo->query("alter table dcr_fraza_rel enable keys");
-
     }
-    
+
     public function update_cash($table_name, $values, $prefix_table = '')
     {
         $prefix = ($prefix_table ? $prefix_table : "html");
         $pdo = $this->prefix_mapping[$prefix];
-        
+
         $sql = "UPDATE " . ($prefix_table ? $prefix_table . "_" : "") . "$table_name SET 
                     count = :count
                 WHERE 
                     id = :id ;";
         $stmt = $pdo->prepare($sql);
-        //Замыкание на добавление новго запроса в транзакцию
-        $call = function($value) use ($stmt) {
-            $stmt->bindValue( ":count" , $value['id'] );
-            $stmt->bindValue( ":id" , $value['count'] );
-            $stmt->execute();
-        };
         //старт транзакции
         $dbh = $this->prefix_mapping[$prefix]->beginTransaction();
-        array_walk($values, $call);
+        foreach ($values as $key => $val)
+        {
+            $stmt->bindValue(":id", $key, PDO::PARAM_INT);
+            $stmt->bindValue(":count", $val, PDO::PARAM_INT);
+            $stmt->execute();
+        }
         $this->prefix_mapping[$prefix]->commit();
     }
-    
-    /** Получить топ кеша*/
-    public function select_cash_data($table_name , $cash_elements)
+
+    /** Получить топ кеша */
+    public function select_cash_data($table_name, $cash_elements, $prifix = "dcr")
     {
-         $dbres = $this->pdo_html->query("
+        $dbres = $this->pdo_html->query("
                 SELECT `id`, `hash`, `count`
-                FROM `dcr_$table_name`
-                ORDER BY count DESC LIMIT 0 , ".(int)$cash_elements.";
+                FROM `" . ($prifix ? $prifix . "_" : "") . "$table_name`
+                ORDER BY count DESC LIMIT 0 , " . (int) $cash_elements . ";
                 ");
 
         return $dbres->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /** Индексы  */
-    public function add_index($table, array $param, $prefix = '') {
+    public function add_index($table, array $param, $prefix = '')
+    {
         $sth = $this->pdo_html->prepare("
 			INSERT INTO " . (!$prefix ? "dcr" : $prefix) . "_" . $table . "_rel
 				( " . $param[0] . " , " . $param[1] . " )
@@ -517,8 +671,38 @@ class DbIndexer {
             Registry::get("Log")->log(implode(" , ", $stmt->errorInfo()) . " $table", "err");
     }
 
+    /**
+     * Общая связь индекса чего либо с документом . 
+     * @param int $doc_id id документа
+     * @param array $values значение индекса либо число либо массив чисел индекса
+     * @param string $prefix префикс перед таблицей
+     * @param string $table название таблицы
+     * @param bool $dis_key если требуется отключение индекса перед большой вставкой данных
+     */
+    public function add_index_rel(array $values, $prefix = "", $table = "", $dis_key = false)
+    {
+        $table_name = ($prefix ? $prefix . "_" : "") . $table;
+        $pdo = $this->pdo_html;
+        ($dis_key ? $pdo->query("alter table $table_name disable keys") : false);
+        $stmt = $pdo->prepare("
+			INSERT IGNORE INTO `$table_name`
+				( `doc_id` , symbol_id)
+			VALUES
+				( :doc_id , :symbol_id) ; ");
+        $call = function($values) use ($stmt) {
+            $stmt->bindValue(":doc_id", $values['doc_id']);
+            $stmt->bindValue(":symbol_id", $values['symbol_id']);
+            $stmt->execute();
+        };
+        $pdo->beginTransaction();
+        array_walk($values, $call);
+        $pdo->commit();
+        ( $dis_key ? $pdo->query("alter table $table_name enable keys") : false );
+    }
+
     /** Добавтить связь между документами , фразами документа и подклассами справочника МКТУ */
-    public function insert_doc_mktu_rel(array $arr_rel) {
+    public function insert_doc_mktu_rel(array $arr_rel)
+    {
         $sql = "INSERT INTO `doc_mktu_rel`
                         ( `doc_id` , `kf_id` , `mktu_catalog_id` , `sub_class_relevance` )
                 VALUES
@@ -532,7 +716,8 @@ class DbIndexer {
         $sth->bindParam(':mktu_catalog_id', $mktu_catalog_id);
         $sth->bindParam(':sub_class_relevance', $sub_class_relevance);
 
-        foreach ($arr_rel as $relevance) {
+        foreach ($arr_rel as $relevance)
+        {
             $doc_id = $relevance['doc_id'];
             $kf_id = $relevance['kf_id'];
             $mktu_catalog_id = $relevance['mktu_catalog_id'];
@@ -543,7 +728,8 @@ class DbIndexer {
     }
 
     /** Получить все статусы документов */
-    public function init_status_list() {
+    public function init_status_list()
+    {
 
         $dbres = $this->pdo->query("
                 SELECT `id`, `title`, `reestr_id`
@@ -554,15 +740,15 @@ class DbIndexer {
         return $dbres->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Методы для работы с ошибками */
-
-    /** Функция обслуживания однотипных таблиц */
-    public function add_field($table_name, $values, $prefix_table = '', $hash = '') {
+    /**
+     * Функция добавление данных для однотипных таблиц типа значение кэш
+     */
+    public function add_field($table_name, $values, $prefix_table = '', $hash = '')
+    {
         $return_array = (is_array($values) ? TRUE : FALSE);
-        
         $prefix = ($prefix_table ? $prefix_table : "data");
         $pdo = $this->prefix_mapping[$prefix];
-        
+
         $sql = "INSERT IGNORE INTO " . ($prefix_table ? $prefix_table . "_" : "") . "$table_name 
                     ($table_name " . ( $hash ? ", hash , count" : "" ) . ") 
                 VALUES 
@@ -577,31 +763,31 @@ class DbIndexer {
             $stmt->execute();
         };
         //Замыкание на получение id вставленных документов
+        //не рабочая конструкция когда происходит вставка нескольких эллементов
         $count_id = function() use ($return_array, $prefix_table, $pdo, $table_name, $values) {
-            if ($return_array) {
+            if ($return_array)
                 return $pdo->query("SELECT id FROM " . ($prefix_table ? $prefix_table . "_" : "") . "$table_name ORDER BY `id` DESC LIMIT " . count($values) . " ;")->fetchAll(PDO::FETCH_ASSOC);
-            } else
+            else
                 return $pdo->lastInsertId();
         };
         //старт транзакции
         $dbh = $this->prefix_mapping[$prefix]->beginTransaction();
-        if ($return_array) {
+        if ($return_array)
             array_walk($values, $call);
-        } else {
+        else
             $call($values);
-        }
+
         $id = $count_id();
         $this->prefix_mapping[$prefix]->commit();
         //print("\n".$id."\n"); exit;
-        return $id ;
-
-
-
-        //return $this->prefix_mapping[$prefix]->lastInsertId();
+        return $id;
     }
 
+    /** Методы для работы с ошибками */
+
     /** Удалить запись об ошибке для определенного линка */
-    public function del_doc_err($link_id) {
+    public function del_doc_err($link_id)
+    {
         $sql = "DELETE FROM `dcr_error` WHERE (link_id=:link_id) ;";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':link_id', $link_id);
@@ -609,7 +795,8 @@ class DbIndexer {
     }
 
     /** Добавить ошибку для линка */
-    public function add_doc_error($link_id, $err_id) {
+    public function add_doc_error($link_id, $err_id)
+    {
         $sql = "INSERT INTO dcr_error 
                    (link_id , error , attempt , parsed_date , state) 
                 VALUES 
@@ -624,6 +811,16 @@ class DbIndexer {
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':link_id', $link_id);
         $stmt->bindParam(':err_id', $err_id);
+        $stmt->execute();
+    }
+
+    /** Установить документы на перепарсинг */
+    public function set_pars_povtor(array $link_list)
+    {
+        $sql = "UPDATE `link`
+                SET pars_povtor = 1 , attempts_count = 0 
+                WHERE	`id` IN (" . implode(",", $link_list) . ");";
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
     }
 

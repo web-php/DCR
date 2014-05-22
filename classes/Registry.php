@@ -50,9 +50,11 @@ class Registry {
         else
         {
             print_r(self::$instance);
-            return FALSE; 
+            return FALSE;
             throw new Exception("\n object $name does not exist in the registry \n");
         }
     }
+
 }
+
 ?>

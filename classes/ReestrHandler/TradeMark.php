@@ -73,6 +73,45 @@ abstract class TradeMark extends ReestrAbstract {
     }
 
     /**
+     * Режим обработки документов исключительно поля 540 , индексация в классы
+     * 1 - номер слова 2 - символ 3 - позиция в фразе 4 - позиция в слове
+     */
+    public function p540($row)
+    {
+
+        $clause = mb_strtoupper(preg_replace("#\s{2,10}#i", "", $row['p540_txt']), "UTF-8");
+        preg_match_all("#[\w\s\d]#u", $clause, $match);
+
+        $word = 1;
+        $position_word = 1;
+        $values = array();
+        foreach ($match[0] as  $value)
+        {
+            $space = false;
+            $position_num = $word;
+            if ($value == " ")
+            {
+                $word++;
+                $space = true;
+                if ($position_num > 1)
+                    $position_num = $word - 1;
+            }
+            $symbol = $position_num . ":" . ($space ? "_" : $value) . ":" . $position_word;
+            //Registry::get("Log")->log($symbol);
+            $values[] = array(
+                "doc_id" => $row['id'],
+                "symbol_id" => $this->get_cash("symbol", $symbol)
+            );
+            $position_word++;
+            if ($space)
+                $position_word = 1;
+        }
+        $this->DbIndexer->add_index_rel($values, "dcr", "symbol_rel");
+    }
+
+    //Залить индекс 540
+
+    /**
      * Обработка частных полей требуемых документов
      * @param $row поля полученной ссылки
      * @param $field_map обрабатываемые поля
@@ -235,17 +274,17 @@ abstract class TradeMark extends ReestrAbstract {
         arsort($sub_class);
         foreach ($sub_class as $class_id => $frazes)
         {
-            foreach( $frazes as $fraza )
+            foreach ($frazes as $fraza)
             {
                 $values[] = array(
-                    "class_id" => $class_id , 
+                    "class_id" => $class_id,
                     "fraza_id" => $this->get_cash("fraza", $fraza)
-                ); 
+                );
             }
         }
         //print_r($values);
         $this->DbIndexer->dcr_fraza_rel($doc_id, $values);
-        Registry::get("Log")->log(" cash length :".count($this->cash["fraza"])."=======>");
+        Registry::get("Log")->log(" cash length :" . count($this->cash["fraza"]) . "=======>");
         unset($values);
     }
 
@@ -399,6 +438,7 @@ abstract class TradeMark extends ReestrAbstract {
         $value = preg_replace("#^\s+-\s+#", "", $value);
         return $value;
     }
+
     protected function cheked_mktu($value)
     {
         $punctuation = array("{", "}", ':', ')', '(', '[', ']', '/', '"', "\\", '*', '.', '—', '-');
@@ -474,25 +514,23 @@ abstract class TradeMark extends ReestrAbstract {
             Registry::get("Log")->log("save => doc_number : " . $this->fields['doc_number'] . " doc_id : " . $id);
             Registry::get("Log")->log("save MKTU => count : (" . count($this->mktu['arr']) . ")");
             Registry::get("Log")->log("save doc_modification => : count(" . count($this->notice) . ")");
-           
+
             $this->memory_clear();
             Registry::get("Log")->log("memory_clear");
             Registry::get("Log")->log("==========================NEXT=================================>");
-            
-            
         }
         else
         {
             throw new Exception("\n Method not exist \n");
         }
     }
-    
+
     private function memory_clear()
     {
         $this->mktu = array();
-        $this->fields =array();
+        $this->fields = array();
         $this->modification_fields = array();
-        $this->html = NULL ; 
+        $this->html = NULL;
     }
 
 }

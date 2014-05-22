@@ -20,24 +20,24 @@ abstract class ReestrAbstract {
     protected $DbIndexer;
     protected $SearchSubClass;
     protected $shd;
-    
-    
     protected $cash = array(
         "fraza" => array(),
         "kf511" => array(),
-        "words" => array()
+        "words" => array(),
+        "symbol" => array()
     );
     protected $cash_counter = array(
         "fraza" => array(),
         "kf511" => array(),
-        "words" => array()
+        "words" => array(),
+        "symbol" => array()
     );
     protected $cash_base = array(
         "fraza" => 0,
         "kf511" => 0,
-        "words" => 0
+        "words" => 0,
+        "symbol" => 0
     );
-    
     protected $cash_elements = 500000;
 
     /** var $fields поля для парсинга */
@@ -86,56 +86,65 @@ abstract class ReestrAbstract {
     protected function get_cash($cash_name, $value)
     {
         $hash = md5($value);
-        $id = array_search($hash, $this->cash[$cash_name]);
-        if ($id == FALSE)
-        {
-            $id = $this->DbIndexer->add_field($cash_name, $value, "dcr", "hash");
-            $this->cash[$cash_name][$id] = $hash ; 
-            $this->cash_base[$cash_name]++;
-            if ($this->cash_base[$cash_name] > $this->cash_elements)
-            {
-                $this->set_cash($cash_name);
-            }
-            //print($cash_name ." => ".$value . " id => $id\n"); exit;
-        }
+        //$id = array_search($hash, $this->cash[$cash_name]); 
+        $id = (isset($this->cash[$cash_name][$hash]) ? $this->cash[$cash_name][$hash] : $this->add_field($cash_name, $value, $hash));
         //Увеличиваем счетчик использования эллемента кэша
-        $this->cash_counter[$cash_name][$id] =+ 1;
+        $this->cash_counter[$cash_name][$id]++;
         return $id;
     }
+
+    //Добавить строчку в базу
+    private function add_field($cash_name, $value, $hash)
+    {
+        //Registry::get("Log")->log("add new cach element : $hash ");
+        $id = $this->DbIndexer->add_field($cash_name, $value, "dcr", "hash");
+        $this->cash[$cash_name][$hash] = $id;
+        $this->cash_counter[$cash_name][$id] = 0 ;
+        $this->cash_base[$cash_name]++;
+        //если установленный кэш привышает допусттмый пересобрать кэш
+        if ($this->cash_base[$cash_name] > $this->cash_elements)
+        {
+            $this->set_cash($cash_name);
+        }
+        return $id;
+    }
+
     /** Установить кэш по требуемой таблице  */
     public function set_cash($cash_name)
     {
-        Registry::get("Log")->log("install cash $cash_name :");
-        if(!isset($this->cash_base[$cash_name]))
+        if (!isset($this->cash_base[$cash_name]))
         {
-            Registry::get("Log")->log("cash_name $cash_name not valid" ,"err");
-            return ;
+            Registry::get("Log")->log("cash_name $cash_name not valid", "err");
+            return;
         }
-        //выгрузить статистику по кэшу в базу , если есть
-        if($this->cash_base[$cash_name] > 0)
-            $this->DbIndexer->update_cash($cash_name,  $this->cash_counter[$cash_name], "dcr");
+        //выгрузить статистику по кэшу в базу
+        $this->DbIndexer->update_cash($cash_name, $this->cash_counter[$cash_name], "dcr");
         //греем кэш
-        $cash_data = $this->DbIndexer->select_cash_data($cash_name , $this->cash_elements);
+        $cash_data = $this->DbIndexer->select_cash_data($cash_name, $this->cash_elements);
         //обнуляем имеющейся кэш
         $this->reset_cash($cash_name);
         //записываем полученный кэш в память
-        foreach($cash_data as $arr)
+        foreach ($cash_data as $arr)
         {
-             $this->cash[$cash_name][$arr['id']] = $arr['hash'] ; 
-             $this->cash_counter[$cash_name][$arr['id']] = $arr['count'] ; 
+            $this->cash[$cash_name][$arr['hash']] = $arr['id'];
+            $this->cash_counter[$cash_name][$arr['id']] = $arr['count'];
         }
+        
+        Registry::get("Log")->log("install cash $cash_name ========================================> ".count($this->cash[$cash_name]));
+        
+        
     }
-    
+
     public function loading_cash()
     {
-        $cash_names = array_keys($this->cash); 
-        foreach($cash_names as $cash_name)
+        $cash_names = array_keys($this->cash);
+        foreach ($cash_names as $cash_name)
         {
             print_r($cash_name);
             exit;
         }
     }
-    
+
     protected function reset_cash($cash_name)
     {
         $this->cash[$cash_name] = array();
@@ -168,6 +177,21 @@ abstract class ReestrAbstract {
         $this->shd = new simple_html_dom();
 
         $this->status_list = $this->DbIndexer->init_status_list();
+    }
+
+    /**
+     * Проеверить html на целостность
+     */
+    public function html_check($row)
+    {
+        if (!$this->set_document($row))
+            return $row['id'];
+        else
+        {
+            if (stristr($this->html, '</body>') === FALSE)
+                return $row['id'];
+        }
+        return false ;
     }
 
     /**

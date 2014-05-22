@@ -15,6 +15,8 @@ require_once __DIR__ . "/classes/Registry.php";
 require_once __DIR__ . "/classes/Log.php";
 require_once __DIR__ . "/classes/Helpers.php";
 require_once __DIR__ . "/classes/shd.php";
+//composer autoloader 
+require 'vendor/autoload.php';
 
 
 $config = require_once __DIR__ . "/cfg/config.php";
@@ -26,7 +28,9 @@ try
     $time_begin = time();
     $Pdo['DATA'] = new \DCR2\Db($config['DB']['BASE_DATA']);
     $Pdo['HTML'] = new \DCR2\Db($config['DB']['BASE_HTML']);
-    Registry::set( $Pdo , "Pdo");
+    $Pdo['RESURS'] = new \DCR2\Db($config['DB']['BASE_RESURS']);
+    Registry::set( 0 , "docs_added") ;
+    Registry::set( $Pdo , "Pdo" );
     Registry::set(new DbIndexer($Pdo));
     Registry::set(new LoadFile());
 
@@ -39,8 +43,7 @@ try
     $DocumentIndexer = new DocumentIndexer($router);
     $DocumentIndexer->run();
 
-
-    $docs_added = $DocumentIndexer->get_docs_added();
+    $docs_added = ($DocumentIndexer->get_docs_added() ? $DocumentIndexer->get_docs_added() : Registry::get("docs_added"))  ;
     $docs_patched = $DocumentIndexer->get_docs_patched();
 
     $FidReport = new FidReport($Pdo['DATA']);

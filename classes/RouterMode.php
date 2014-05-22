@@ -75,7 +75,7 @@ class RouterMode {
         }
     }
 
-    /**
+    /** 
      * Установить реестры с которыми работать 
      */
     private function set_reestr()
@@ -84,12 +84,14 @@ class RouterMode {
         {
             $reestr = explode(" ", $this->options['r']);
             //Проверяем валидность реестров
+            
             foreach ($reestr as $id)
             {
-                if (array_key_exists($id, $this->config['ALL_REESTR']))
+                Registry::get("Log")->log($id);
+                if (array_search($id, $this->config['ALL_REESTR']) !== FALSE)
                     $this->router['reestr_id'][$id] = $id;
             }
-        }
+        }  
         if (empty($this->router['reestr_id']))
         {
             $this->router['reestr_id'] = $this->config['DEFAULT_REESTR'];

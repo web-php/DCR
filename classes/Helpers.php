@@ -29,6 +29,8 @@ class Helpers {
     {
         return preg_replace("~(\d(?=(?:\d{3})+(?!\d)))~s", "\\1,", $num); 
     }
+    
+    
 
 }
 

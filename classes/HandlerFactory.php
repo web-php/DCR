@@ -6,13 +6,19 @@
  */
 class HandlerFactory {
 
-    /** var array зарегестрированнные в системе обработчики реестров */
-    public static $HandlerName = array("Reestr_6" => "",
-        "Reestr_7" => "",
-        "Reestr_8" => "",
-        "Reestr_9" => "",
-        "Reestr_11" => "",
-        "Reestr_12" => "");
+    /** 
+     * var array зарегестрированнные в системе обработчики реестров 
+     * TODO : Исправить точку входа 
+     */
+    public static $HandlerName = array(
+        "Reestr_6" => "",
+        "Reestr_7" => "" ,
+        "Reestr_8" => "" ,
+        "Reestr_9" => "" ,
+        "Reestr_11" => "" ,
+        "Reestr_12" => "" , 
+        "Reestr_23" => "" , 
+        "Reestr_33" => "");
 
     /**
      * Вернуть в зависимости от условия требуемый экземпляр класса для работы с реестром

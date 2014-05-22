@@ -59,7 +59,7 @@ class Reestr_6 extends TradeMark {
                 $mktu_str = trim($mktu_str);
                 $mktu_num = str_pad(trim($mktu_num['mktu']), 2, "0", STR_PAD_LEFT);
                 $mktu_str = str_replace($mktu_num, "", $mktu_str);
-                
+
                 $mktu_arr[$mktu_num] = $this->cheked_space($mktu_str);
             }
         }
@@ -104,7 +104,7 @@ class Reestr_6 extends TradeMark {
     }
 
     /** Получить поля характерные для 6-7 реестра */
-    protected function get_modification_field( $part )
+    protected function get_modification_field($part)
     {
         $notice['date_pub'] = $this->get_published($part);
         $notice['type_edits'] = $this->get_type_edits($part);
